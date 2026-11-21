@@ -75,7 +75,6 @@ Open `lung-cancer-risk-classification.ipynb` and run all cells. The last cells s
 
 ```powershell
 cd web_app
-pip install -r requirements.txt
 python predict_lung_cancer_app.py
 ```
 
