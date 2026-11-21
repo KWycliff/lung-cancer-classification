@@ -1,4 +1,8 @@
+# 
 """Flask web app that serves the lung cancer risk Random Forest model.
+
+Developed with assistance from Claude (Anthropic), Nov 2026:
+app routes, input validation, and the HTML/CSS front end.
 
 Run from this folder:
     python predict_lung_cancer_app.py
