@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lung cancer risk check</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <h1>Lung cancer risk check</h1>
+      <p>Answer the questions below and a model  will estimate whether your Lung cancer risk.</p>
+    </header>
+
+    {% if error %}
+    <div class="notice notice-error" role="alert">{{ error }}</div>
+    {% endif %}
+
+    {% if result %}
+    <section class="result {{ 'result-high' if result.high_risk else 'result-low' }}" aria-live="polite">
+      <h2>{{ result.label }}</h2>
+    </section>
+    {% endif %}
+
+    <form class="form" action="{{ url_for('predict') }}" method="post">
+      <section class="group">
+        <h2>About you</h2>
+        <div class="about">
+          <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+              <option value="" disabled {{ 'selected' if not form.get('gender') }}>Select</option>
+              <option value="F" {{ 'selected' if form.get('gender') == 'F' }}>Female</option>
+              <option value="M" {{ 'selected' if form.get('gender') == 'M' }}>Male</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="age">Age in years</label>
+            <input id="age" name="age" type="number" min="1" max="120" step="1" inputmode="numeric" required value="{{ form.get('age', '') }}">
+          </div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Lifestyle and symptoms</h2>
+        <div class="questions">
+          {% for field, question in yes_no_fields %}
+          <fieldset class="question">
+            <legend>{{ question }}</legend>
+            <div class="choices">
+              <label>
+                <input type="radio" name="{{ field }}" value="2" required {{ 'checked' if form.get(field) == '2' }}>
+                <span>Yes</span>
+              </label>
+              <label>
+                <input type="radio" name="{{ field }}" value="1" {{ 'checked' if form.get(field) == '1' }}>
+                <span>No</span>
+              </label>
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+      </section>
+
+      <button type="submit" class="submit">Check my risk</button>
+    </form>
+
+    <footer class="footer">
+      <p>Educational project. The model was trained on a small survey dataset and must not be used for medical decisions.</p>
+    </footer>
+  </main>
+</body>
+</html>
