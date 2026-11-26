@@ -16,7 +16,7 @@ import pandas as pd
 from flask import Flask, render_template, request
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "lung_cancer_random_forest.pkl"
+MODEL_PATH = BASE_DIR / "lung_cancer_risk_model.pkl"
 
 app = Flask(__name__)
 model = joblib.load(MODEL_PATH)

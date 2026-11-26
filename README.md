@@ -1,60 +1,64 @@
-# Machine Learning-Based Lung Cancer Risk Assessment and Classification
+# Machine Learning Based Lung Cancer Risk Assessment and Classification
 
-A machine learning project that classifies lung cancer risk from lifestyle and symptom survey data, with a simple Flask web app for making predictions.
+A machine learning project that classifies lung cancer risk from simple, self-reported demographic, lifestyle and symptom information. It covers data preprocessing, class-imbalance handling, model comparison, feature importance analysis and deployment through a small web app.
 
-## Project overview
+## Problem
 
-The project covers the full workflow:
+Lung cancer is much easier to treat when it is detected early.
 
-1. **Data preprocessing:** cleaning, duplicate removal and encoding.
-2. **Model training and evaluation:** comparing several classifiers.
-3. **Model interpretation:** permutation feature importance.
-4. **Deployment:** a Flask web app that loads the saved model.
+Imaging based screening such as low dose CT can catch the disease early, but it needs specialist equipment and expertise, which are expensive and not available everywhere. That leaves a gap. If a short questionnaire covering things like smoking, age, and symptoms can estimate someone's risk, it could help decide who gets referred for the more expensive tests first. That is the question this project explores.
+
+- **Target:** LUNG_CANCER (YES / NO), a binary classification task
+- **Features (15):** GENDER, AGE, SMOKING, YELLOW_FINGERS, ANXIETY, PEER_PRESSURE, CHRONIC DISEASE, FATIGUE, ALLERGY, WHEEZING, ALCOHOL CONSUMING, COUGHING, SHORTNESS OF BREATH, SWALLOWING DIFFICULTY, CHEST PAIN
+
+AGE is the only continuous feature. The rest are binary, coded 1/2 and GENDER is M/F.
 
 ## Dataset
 
-- Source: [Lung Cancer survey dataset (Kaggle)](https://www.kaggle.com/datasets/mysarahmadbhat/lung-cancer)
-- Features: gender, age, smoking, yellow fingers, anxiety, peer pressure, chronic disease, fatigue, allergy, wheezing, alcohol consumption, coughing, shortness of breath, swallowing difficulty, chest pain.
-- Target: `LUNG_CANCER` (YES/NO). The classes are imbalanced, with far more YES than NO records.
-- Yes/no features are coded 1 = No, 2 = Yes.
+- **Source:** [Lung Cancer, Kaggle](https://www.kaggle.com/datasets/mysarahmadbhat/lung-cancer) (survey_lung_cancer.csv)
+- **Raw size:** 309 rows x 16 columns, no missing values
+- **33 duplicates:**
+- **Split:** 80/20 stratified train/test 
 
-## Method
+## Methodology
 
-- 80/20 stratified train/test split (`random_state=42`).
-- Class imbalance handled with **SMOTENC**, applied to the training set only so the test set stays untouched.
-- Models compared: Dummy baseline, Logistic Regression, Linear SVC, k-NN, Random Forest.
-- Hyperparameters of Logistic Regression and Random Forest tuned with `GridSearchCV` (5-fold stratified CV, macro F1).
-- Metrics: accuracy, macro precision/recall/F1, weighted F1, confusion matrices, ROC-AUC.
+1. **Preprocessing:** check for missing values, drop duplicates, inspect data types, and encode GENDER and LUNG_CANCER with LabelEncoder.
+2. **Exploration:** age distribution, gender distribution and class balance plots.
+3. **Imbalance handling:** SMOTENC oversampling on the training split only (190 YES / 190 NO), so the test set stays untouched and there is no data leakage.
+4. **Model comparison:** Dummy classifier (baseline), Logistic regression, Linear SVC, k-NN and Random forest, evaluated with classification reports and confusion matrices.
+5. **Interpretation:** permutation feature importance (drop in macro F1 when a feature is shuffled) and a ROC curve for the selected model.
+6. **Deployment:** the selected model is saved with **joblib** to **web_app/lung_cancer_risk_model.pkl** for use by a web app.
 
 ## Results
 
-Tuned models evaluated on the held-out test set (56 records, 8 negative and 48 positive):
+Models trained on the SMOTENC resampled training data and evaluated on test data
 
-| Model | Accuracy | Macro F1 |
-|---|---|---|
-| Random Forest (selected) | 0.946 | 0.905 |
-| Logistic Regression | 0.893 | 0.755 |
+| Model               | Accuracy | Macro F1 |
+|---------------------|---------:|---------:|
+| Dummy classifier    | 0.14     | 0.12     |
+| **Logistic regression** | **0.93** | **0.85** |
+| Linear SVC          | 0.91     | 0.81     |
+| k-NN (k=30)         | 0.73     | 0.63     |
+| Random forest       | 0.91     | 0.81     |
 
-The selected Random Forest reaches a ROC-AUC of 0.964.
+Logistic regression performed best and is the model currently saved for deployment. 
 
-**Feature importance (permutation, macro F1):** alcohol consumption, yellow fingers and coughing contributed most. Smoking, gender, age, peer pressure and chronic disease had negligible effect on test performance.
+## limitations
 
-## Repository structure
+- **Small dataset, tiny minority class.** 
+- **Synthetic samples.** 
+
+## Project structure
 
 ```
 lung-cancer-classification/
-├── lung-cancer-risk-classification.ipynb
 ├── dataset/
 │   └── survey_lung_cancer.csv
+├── lung-cancer-risk-classification.ipynb
+├── web_app/
+│   └── lung_cancer_risk_model.pkl
 ├── requirements.txt
-└── web_app/
-    ├── predict_lung_cancer_app.py
-    ├── lung_cancer_random_forest.pkl
-    ├── templates/
-    │   └── index.html
-    └── static/
-        └── css/
-            └── styles.css
+└── README.md
 ```
 
 ## Getting started
@@ -69,7 +73,7 @@ pip install -r requirements.txt
 
 ### 2. Run the notebook
 
-Open `lung-cancer-risk-classification.ipynb` and run all cells. The last cells save the trained model as `lung_cancer_random_forest.pkl`
+Open `lung-cancer-risk-classification.ipynb` and run all cells.
 
 ### 3. Run the web app
 
@@ -82,6 +86,5 @@ Open http://127.0.0.1:5000 in your browser, answer the questions and select **Ch
 
 ## Acknowledgements
 
-- Dataset: Kaggle, "Lung Cancer" survey dataset.
 - Web app structure based on the [ML-For-Beginners web app tutorial](https://microsoft.github.io/ML-For-Beginners/#/3-Web-App/1-Web-App/README) by Microsoft.
 - Parts of the notebook code were developed with assistance from ChatGPT, and the web app and feature importance code with assistance from Claude (Anthropic).
