@@ -17,9 +17,11 @@ from flask import Flask, render_template, request
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "lung_cancer_risk_model.pkl"
+SCALER_PATH = BASE_DIR / "age_scaler.pkl"
 
 app = Flask(__name__)
 model = joblib.load(MODEL_PATH)
+age_scaler = joblib.load(SCALER_PATH)
 
 # LabelEncoder sorts classes alphabetically during training, so F -> 0 and M -> 1.
 GENDER_CODES = {"F": 0, "M": 1}
@@ -56,7 +58,9 @@ def build_features(form):
     if not 1 <= age <= 120:
         raise ValueError("Age must be between 1 and 120.")
 
-    row = {"GENDER": GENDER_CODES[gender], "AGE": age}
+    # Scale with the same min/max the model was trained with.
+    age_scaled = float(age_scaler.transform(pd.DataFrame({"AGE": [age]}))[0, 0])
+    row = {"GENDER": GENDER_CODES[gender], "AGE": age_scaled}
     for field, column, question in YES_NO_FIELDS:
         value = form.get(field)
         if value not in ("1", "2"):
